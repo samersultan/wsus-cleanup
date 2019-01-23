@@ -1,4 +1,11 @@
 # wsus-cleanup
-PowerShell Script for cleaning up WSUS. 
+
+PowerShell Script for cleaning up WSUS.
+
 ----
-Save on WSUS server and run PowerShell script as administrator
+
+Powershell script to automate cleaning of WSUS.
+
+Can either be run as a scheduled task, or one of instance.
+
+Save script on WSUS server, right click script and run as administrator.
