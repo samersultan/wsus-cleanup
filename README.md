@@ -1,6 +1,6 @@
 # WSIS Cleanup PowerShell Script 
 
-PowerShell Script for cleaning up WSUS, simple, fast, easy. :zap:
+:zap: PowerShell Script for cleaning up WSUS, simple, fast, easy. :zap:
 
 ----
 
