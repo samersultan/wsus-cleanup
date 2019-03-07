@@ -3,7 +3,7 @@
 :zap: PowerShell Script for cleaning up WSUS, simple, fast, easy. :zap:
 
 
-Can either be run as a scheduled task, or one off instance. Save the script to WSUS server, right click script and run as administrator.
+PowerShell script can either be run as a scheduled task, or one off instance. Save the script to WSUS server, right click script and run as administrator.
 
 <img src="https://i.imgur.com/pZOm2Xt.png">
 
