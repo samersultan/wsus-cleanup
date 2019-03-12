@@ -10,10 +10,6 @@ This WSUS PowerShell script can either be run as a scheduled task (weekly / mont
 If you have any questions, or comments please reach out to me on Twitter <a href="https://twitter.com/sultansolutions"> @SultanSolutions </a> 
 
 
-----
-
-**Updated 02 / 15 / 2019**
-
 
 
 
