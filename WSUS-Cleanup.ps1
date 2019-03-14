@@ -1,7 +1,7 @@
 <#
 
     WSUS Cleanup Script
-    Last updated 01-15-2019
+    Last updated 02-15-2019
     Please view readme for more info and updates: https://github.com/samersultan/wsus-cleanup
 
 #>
