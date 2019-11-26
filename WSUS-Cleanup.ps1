@@ -1,7 +1,7 @@
 <#
 
     WSUS Cleanup Script
-    Last updated 02-15-2019
+    Last updated 11-26-2019
     Please view readme for more info and updates: https://github.com/samersultan/wsus-cleanup
 
 #>
@@ -61,6 +61,7 @@ $SkipFileCleanup = $SqlServer -ne ""
 $log_source = "WSUS cleanup Task"  # Event log source name
 $log_debugMode = $true  # set to false to suppress console output 
 
+$SQLPath="WsusDBMaint.sql" #for RebuildDBIndexes
 
 ##########################
 
@@ -76,14 +77,19 @@ function log_init{
 }
 
 function log( [string] $msg, [int32] $eventID, [System.Diagnostics.EventLogEntryType] $level ){
-    Write-EventLog -LogName Application -Source $log_source -EntryType $level -EventId $eventID -Message $msg 
-    if ( $log_debugMode ){
-        switch ($level){
-            Warning {Write-Host $msg -ForegroundColor Yellow }
-            Error { Write-Host $msg -ForegroundColor Red }
-            default { Write-Host $msg -ForegroundColor Gray }
+    $i = 0
+    do
+    {
+        Write-EventLog -LogName Application -Source $log_source -EntryType $level -EventId $eventID -Message ($msg[($i*10000)..(($i+1)*10000-1)] -join "") 
+        if ( $log_debugMode ){
+            switch ($level){
+                Warning {Write-Host ($msg[($i*10000)..(($i+1)*10000-1)] -join "") -ForegroundColor Yellow }
+                Error { Write-Host ($msg[($i*10000)..(($i+1)*10000-1)] -join "") -ForegroundColor Red }
+                default { Write-Host ($msg[($i*10000)..(($i+1)*10000-1)] -join "") -ForegroundColor Gray }
+            }
         }
-    }
+        $i += 1
+    }while(($msg[(($i-1)*10000)..($i*10000-1)] -join "").Length -eq 10000)
 }
 
 function dbg( [string] $msg ){
@@ -201,7 +207,7 @@ function DbConnectionString{
 
 ##############
 
-function DeleteUnusedContent{
+function DeleteUnneededContent{
 
     log "Deleting unneeded content files" 1 "Information"
     
@@ -238,6 +244,41 @@ function DeleteInactiveComputers( $DbConn ){
 
 }
 
+###################
+
+function CompressUpdates{
+
+    log "Compressing updates" 1 "Information"
+
+    try{
+        $status = Invoke-WsusServerCleanup -CompressUpdates 
+        log "Done compressing updates: $status" 1 "Information"
+    }
+    catch{
+        $script:errorCount++
+        log "Exception compressing updates:`n$_" 99 "Error"
+    }
+}
+
+###################
+
+function RebuildDBIndexes{
+
+    log "Rebuilding DB Indexes" 1 "Information"
+
+    try{
+        Import-Module UpdateServices
+        $status = SQLCMD -S \\.\pipe\Microsoft##WID\tsql\query -i $SQLPath -I 
+        log "Done Rebuilding DB Indexes: $status" 1 "Information"
+    }
+    catch{
+        $script:errorCount++
+        log "Exception Rebuilding DB Indexes:`n$_" 99 "Error"
+    }
+}
+
+###################
+
 function RestartWsusService{
     log "Stopping IIS.." 1 "Information"
     try{
@@ -273,13 +314,15 @@ try{
     log "Connecting to database $SqlDB on $SqlServer" 1 "Information"
     $Conn.Open() 
     try{
+        RebuildDBIndexes
+        CompressUpdates
         DeclineExpiredUpdates $Conn
         DeclineSupersededUpdates $Conn
         DeleteObsoleteUpdates $Conn
-        DeleteInactiveComputers $Conn   
+        DeleteInactiveComputers $Conn
         RestartWsusService   
         if ( ! $SkipFileCleanup ) {  
-            DeleteUnusedContent 
+            DeleteUnneededContent 
         }
     }
     finally{
@@ -293,4 +336,5 @@ catch{
 }
 
 $time_exec = ( Get-Date ) - $timeExecStart
-log "Completed script execution with $errorCount error(s)`nExecution time $([math]::Round($time_exec.TotalHours)) hours and $([math]::Round($time_exec.totalMinutes)) minutes." 1 "Information"
+log "Completed script execution with $errorCount error(s)`nExecution time $([math]::Truncate($time_exec.TotalHours)) hours and $([math]::Round($time_exec.totalMinutes%60)) minutes." 1 "Information"
+exit $errorCount
