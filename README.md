@@ -1,6 +1,6 @@
 # WSUS Cleanup PowerShell Script 
 
-:zap: PowerShell Script for cleaning up WSUS, simple, fast, easy. :zap:
+:zap: :zap: PowerShell Script for cleaning up WSUS, simple, fast, easy. :zap: :zap:
 
 
 This WSUS PowerShell script can either be run as a scheduled task (weekly / monthly), or an one off instance. Save the script to WSUS server, right click script and run as administrator.
